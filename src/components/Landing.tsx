@@ -16,6 +16,9 @@ const Landing: React.FC = () => {
   const [donators, setDonators] = useState<Donator[]>([]);
   const [isLoadingDonators, setIsLoadingDonators] = useState(true);
 
+  // Add user statistics state
+  const [userStats, setUserStats] = useState<any>(null);
+
   const [contactForm, setContactForm] = useState({
     name: '',
     email: '',
@@ -30,7 +33,20 @@ const Landing: React.FC = () => {
 
   useEffect(() => {
     loadDonators();
+    loadUserStats();
   }, []);
+
+  const loadUserStats = async () => {
+    try {
+      const { data, error } = await supabase.rpc('get_current_statistics');
+      if (error) throw error;
+      if (data && data.length > 0) {
+        setUserStats(data[0]);
+      }
+    } catch (error) {
+      console.error('Error loading user statistics:', error);
+    }
+  };
 
   const loadDonators = async () => {
     setIsLoadingDonators(true);
@@ -148,6 +164,30 @@ const Landing: React.FC = () => {
             Track assignments, manage exams, boost productivity with Pomodoro timers, 
             and achieve your academic goals.
           </p>
+          
+          {/* User Statistics */}
+          {userStats && (
+            <div className="flex justify-center mb-8">
+              <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
+                <div className="flex items-center space-x-6">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">{userStats.total_users}</div>
+                    <div className="text-sm text-gray-600">Active Students</div>
+                  </div>
+                  <div className="w-px h-12 bg-gray-200"></div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">{userStats.resolved_complaints}</div>
+                    <div className="text-sm text-gray-600">Issues Resolved</div>
+                  </div>
+                  <div className="w-px h-12 bg-gray-200"></div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">24/7</div>
+                    <div className="text-sm text-gray-600">Support Available</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-16">
             <Link

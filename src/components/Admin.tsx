@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Users, UserPlus, UserMinus, Shield, Crown, AlertCircle, Trash2, X, Mail, Phone, MessageSquare, Lock, Eye, EyeOff, Plus, Heart } from 'lucide-react';
+import { Users, UserPlus, UserMinus, Shield, Crown, AlertCircle, Trash2, X, Mail, Phone, MessageSquare, Lock, Eye, EyeOff, Plus, Heart, BarChart3 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../lib/supabase';
 import AdminLogin from './AdminLogin';
+import AdminDashboard from './AdminDashboard';
 
 interface User {
   id: string;
@@ -55,6 +56,9 @@ const Admin: React.FC = () => {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [donators, setDonators] = useState<Donator[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Active tab
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'complaints' | 'donators'>('dashboard');
   
   // Role assignment modal
   const [showRoleModal, setShowRoleModal] = useState(false);
@@ -467,262 +471,285 @@ const Admin: React.FC = () => {
         </div>
       </div>
       
+      {/* Navigation Tabs */}
+      <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b`}>
+        <div className="px-6">
+          <nav className="flex space-x-8">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                activeTab === 'dashboard'
+                  ? 'border-blue-500 text-blue-600'
+                  : isDarkMode 
+                    ? 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-300'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <BarChart3 className="w-4 h-4" />
+                <span>Dashboard</span>
+              </div>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('users')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                activeTab === 'users'
+                  ? 'border-blue-500 text-blue-600'
+                  : isDarkMode 
+                    ? 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-300'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <Users className="w-4 h-4" />
+                <span>Users</span>
+              </div>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('complaints')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                activeTab === 'complaints'
+                  ? 'border-blue-500 text-blue-600'
+                  : isDarkMode 
+                    ? 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-300'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <MessageSquare className="w-4 h-4" />
+                <span>Messages</span>
+                {complaints.filter(c => c.status === 'pending').length > 0 && (
+                  <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center">
+                    {complaints.filter(c => c.status === 'pending').length}
+                  </span>
+                )}
+              </div>
+            </button>
+            
+            <button
+              onClick={() => setActiveTab('donators')}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 ${
+                activeTab === 'donators'
+                  ? 'border-blue-500 text-blue-600'
+                  : isDarkMode 
+                    ? 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-300'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center space-x-2">
+                <Heart className="w-4 h-4" />
+                <span>Donators</span>
+              </div>
+            </button>
+          </nav>
+        </div>
+      </div>
+      
       <div className="p-8">
         <div className="max-w-7xl mx-auto">
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm border p-6`}>
-              <div className="flex items-center">
-                <Users className="w-8 h-8 text-blue-600" />
-                <div className="ml-4">
-                  <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Users</p>
-                  <p className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>{users.length}</p>
-                </div>
-              </div>
-            </div>
+          {/* Tab Content */}
+          {activeTab === 'dashboard' && <AdminDashboard adminUser={adminUser} />}
+          
+          {activeTab === 'users' && (
+            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} rounded-2xl shadow-lg border`}>
+              <div className="p-6">
+                <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-6`}>
+                  User Management
+                </h2>
 
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm border p-6`}>
-              <div className="flex items-center">
-                <Shield className="w-8 h-8 text-green-600" />
-                <div className="ml-4">
-                  <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Moderators</p>
-                  <p className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                    {userRoles.filter(r => r.role === 'moderator').length}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm border p-6`}>
-              <div className="flex items-center">
-                <Crown className="w-8 h-8 text-yellow-600" />
-                <div className="ml-4">
-                  <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Admins</p>
-                  <p className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                    {userRoles.filter(r => r.role === 'admin').length}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm border p-6`}>
-              <div className="flex items-center">
-                <Heart className="w-8 h-8 text-pink-600" />
-                <div className="ml-4">
-                  <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Donators</p>
-                  <p className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>{donators.length}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-sm border p-6`}>
-              <div className="flex items-center">
-                <AlertCircle className="w-8 h-8 text-red-600" />
-                <div className="ml-4">
-                  <p className={`text-sm font-medium ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Pending Complaints</p>
-                  <p className={`text-2xl font-bold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                    {complaints.filter(c => c.status === 'pending').length}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Users Management */}
-          <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} rounded-2xl shadow-lg border mb-8`}>
-            <div className="p-6">
-              <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-6`}>
-                User Management
-              </h2>
-
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className={`border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                      <th className={`text-left py-3 px-4 font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>User</th>
-                      <th className={`text-left py-3 px-4 font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Role</th>
-                      <th className={`text-left py-3 px-4 font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Institution</th>
-                      <th className={`text-left py-3 px-4 font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Joined</th>
-                      <th className={`text-left py-3 px-4 font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map((user) => {
-                      const userRole = getUserRole(user.id);
-                      return (
-                        <tr key={user.id} className={`border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                          <td className="py-3 px-4">
-                            <div>
-                              <div className={`font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
-                                {user.name}
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className={`border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                        <th className={`text-left py-3 px-4 font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>User</th>
+                        <th className={`text-left py-3 px-4 font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Role</th>
+                        <th className={`text-left py-3 px-4 font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Institution</th>
+                        <th className={`text-left py-3 px-4 font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Joined</th>
+                        <th className={`text-left py-3 px-4 font-medium ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {users.map((user) => {
+                        const userRole = getUserRole(user.id);
+                        return (
+                          <tr key={user.id} className={`border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                            <td className="py-3 px-4">
+                              <div>
+                                <div className={`font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>
+                                  {user.name}
+                                </div>
+                                <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                  {user.email}
+                                </div>
                               </div>
-                              <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                {user.email}
-                              </div>
+                            </td>
+                            <td className="py-3 px-4">
+                              <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium border ${getRoleColor(userRole)}`}>
+                                {getRoleIcon(userRole)}
+                                <span className="capitalize">{userRole}</span>
+                              </span>
+                            </td>
+                            <td className={`py-3 px-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                              {user.institution || 'Not specified'}
+                            </td>
+                            <td className={`py-3 px-4 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                              {new Date(user.created_at).toLocaleDateString()}
+                            </td>
+                            <td className="py-3 px-4">
+                              <button
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setNewRole(userRole as 'user' | 'moderator' | 'admin');
+                                  setShowRoleModal(true);
+                                }}
+                                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                              >
+                                Manage Role
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'complaints' && (
+            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} rounded-2xl shadow-lg border`}>
+              <div className="p-6">
+                <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-6`}>
+                  Complaints & Contact Messages
+                </h2>
+
+                {complaints.length > 0 ? (
+                  <div className="space-y-4">
+                    {complaints.map((complaint) => (
+                      <div key={complaint.id} className={`p-4 border rounded-lg ${isDarkMode ? 'border-gray-700 bg-gray-700' : 'border-gray-200 bg-gray-50'}`}>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <h3 className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                {complaint.subject}
+                              </h3>
+                              <span className={`px-2 py-1 text-xs rounded-full ${
+                                complaint.status === 'resolved'
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                {complaint.status}
+                              </span>
                             </div>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`inline-flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium border ${getRoleColor(userRole)}`}>
-                              {getRoleIcon(userRole)}
-                              <span className="capitalize">{userRole}</span>
-                            </span>
-                          </td>
-                          <td className={`py-3 px-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                            {user.institution || 'Not specified'}
-                          </td>
-                          <td className={`py-3 px-4 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            {new Date(user.created_at).toLocaleDateString()}
-                          </td>
-                          <td className="py-3 px-4">
+                            <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-2`}>
+                              <span className="font-medium">From:</span> {complaint.email} | {complaint.phone}
+                            </div>
+                            <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-3`}>
+                              {complaint.message}
+                            </p>
+                            {complaint.admin_reply && (
+                              <div className={`mt-3 p-3 rounded border-l-4 border-blue-500 ${isDarkMode ? 'bg-gray-800' : 'bg-blue-50'}`}>
+                                <div className={`text-sm font-medium ${isDarkMode ? 'text-blue-400' : 'text-blue-700'} mb-1`}>
+                                  Admin Reply:
+                                </div>
+                                <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
+                                  {complaint.admin_reply}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center space-x-2 ml-4">
+                            <div className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'} text-right`}>
+                              {new Date(complaint.created_at).toLocaleDateString()}
+                            </div>
+                            {complaint.status === 'pending' && (
+                              <button
+                                onClick={() => {
+                                  setSelectedComplaint(complaint);
+                                  setShowReplyModal(true);
+                                }}
+                                className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors duration-200"
+                              >
+                                Reply
+                              </button>
+                            )}
                             <button
-                              onClick={() => {
-                                setSelectedUser(user);
-                                setNewRole(userRole as 'user' | 'moderator' | 'admin');
-                                setShowRoleModal(true);
-                              }}
-                              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                              onClick={() => deleteComplaint(complaint.id)}
+                              className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors duration-200"
                             >
-                              Manage Role
+                              Delete
                             </button>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <MessageSquare className={`w-16 h-16 ${isDarkMode ? 'text-gray-600' : 'text-gray-300'} mx-auto mb-4`} />
+                    <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No complaints or messages yet</p>
+                  </div>
+                )}
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Complaints Management */}
-          <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} rounded-2xl shadow-lg border mb-8`}>
-            <div className="p-6">
-              <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'} mb-6`}>
-                Complaints & Contact Messages
-              </h2>
+          {activeTab === 'donators' && (
+            <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} rounded-2xl shadow-lg border`}>
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                    Donators Management
+                  </h2>
+                  <button
+                    onClick={() => setShowDonatorModal(true)}
+                    className="flex items-center space-x-2 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium transition-colors duration-200"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Add Donator</span>
+                  </button>
+                </div>
 
-              {complaints.length > 0 ? (
-                <div className="space-y-4">
-                  {complaints.map((complaint) => (
-                    <div key={complaint.id} className={`p-4 border rounded-lg ${isDarkMode ? 'border-gray-700 bg-gray-700' : 'border-gray-200 bg-gray-50'}`}>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center space-x-2 mb-2">
-                            <h3 className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                              {complaint.subject}
-                            </h3>
-                            <span className={`px-2 py-1 text-xs rounded-full ${
-                              complaint.status === 'resolved'
-                                ? 'bg-green-100 text-green-800'
-                                : 'bg-yellow-100 text-yellow-800'
-                            }`}>
-                              {complaint.status}
-                            </span>
-                          </div>
-                          <div className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'} mb-2`}>
-                            <span className="font-medium">From:</span> {complaint.email} | {complaint.phone}
-                          </div>
-                          <p className={`${isDarkMode ? 'text-gray-300' : 'text-gray-700'} mb-3`}>
-                            {complaint.message}
-                          </p>
-                          {complaint.admin_reply && (
-                            <div className={`mt-3 p-3 rounded border-l-4 border-blue-500 ${isDarkMode ? 'bg-gray-800' : 'bg-blue-50'}`}>
-                              <div className={`text-sm font-medium ${isDarkMode ? 'text-blue-400' : 'text-blue-700'} mb-1`}>
-                                Admin Reply:
-                              </div>
-                              <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
-                                {complaint.admin_reply}
+                {donators.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {donators.map((donator) => (
+                      <div key={donator.id} className={`p-4 border rounded-lg ${isDarkMode ? 'border-gray-700 bg-gray-700' : 'border-gray-200 bg-gray-50'} group`}>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-red-500 rounded-full flex items-center justify-center">
+                              <Heart className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                              <h4 className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                {donator.name}
+                              </h4>
+                              <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                {new Date(donator.created_at).toLocaleDateString()}
                               </p>
                             </div>
-                          )}
-                        </div>
-                        <div className="flex items-center space-x-2 ml-4">
-                          <div className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'} text-right`}>
-                            {new Date(complaint.created_at).toLocaleDateString()}
                           </div>
-                          {complaint.status === 'pending' && (
-                            <button
-                              onClick={() => {
-                                setSelectedComplaint(complaint);
-                                setShowReplyModal(true);
-                              }}
-                              className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm transition-colors duration-200"
-                            >
-                              Reply
-                            </button>
-                          )}
                           <button
-                            onClick={() => deleteComplaint(complaint.id)}
-                            className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white rounded text-sm transition-colors duration-200"
+                            onClick={() => deleteDonator(donator.id)}
+                            className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-all duration-200"
                           >
-                            Delete
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <MessageSquare className={`w-16 h-16 ${isDarkMode ? 'text-gray-600' : 'text-gray-300'} mx-auto mb-4`} />
-                  <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No complaints or messages yet</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Donators Management */}
-          <div className={`${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} rounded-2xl shadow-lg border`}>
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className={`text-xl font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                  Donators Management
-                </h2>
-                <button
-                  onClick={() => setShowDonatorModal(true)}
-                  className="flex items-center space-x-2 px-4 py-2 bg-pink-600 hover:bg-pink-700 text-white rounded-lg font-medium transition-colors duration-200"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Add Donator</span>
-                </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Heart className={`w-16 h-16 ${isDarkMode ? 'text-gray-600' : 'text-gray-300'} mx-auto mb-4`} />
+                    <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No donators yet</p>
+                  </div>
+                )}
               </div>
-
-              {donators.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {donators.map((donator) => (
-                    <div key={donator.id} className={`p-4 border rounded-lg ${isDarkMode ? 'border-gray-700 bg-gray-700' : 'border-gray-200 bg-gray-50'} group`}>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gradient-to-r from-pink-500 to-red-500 rounded-full flex items-center justify-center">
-                            <Heart className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <h4 className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                              {donator.name}
-                            </h4>
-                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                              {new Date(donator.created_at).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-                        <button
-                          onClick={() => deleteDonator(donator.id)}
-                          className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-600 transition-all duration-200"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-12">
-                  <Heart className={`w-16 h-16 ${isDarkMode ? 'text-gray-600' : 'text-gray-300'} mx-auto mb-4`} />
-                  <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>No donators yet</p>
-                </div>
-              )}
             </div>
-          </div>
+          )}
         </div>
 
         {/* Role Assignment Modal */}

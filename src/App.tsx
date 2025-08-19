@@ -16,6 +16,7 @@ import Friends from './components/Friends';
 import Admin from './components/Admin';
 import ModeratorPanel from './components/ModeratorPanel';
 import PasswordReset from './components/PasswordReset';
+import MobileAdminApp from './components/MobileAdminApp';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const AppRoutes: React.FC = () => {
@@ -79,6 +80,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/moderator" element={<ModeratorPanel />} />
       <Route path="/admin-login" element={<Admin />} />
       <Route path="/moderator-login" element={<ModeratorPanel />} />
+      <Route path="/mobile-admin" element={<MobileAdminApp />} />
     </Routes>
   );
 };
